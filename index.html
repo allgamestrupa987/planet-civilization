@@ -1,575 +1,309 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASTRA: Planeta Perdido</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planet Civilitation</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Lib 3D Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-
-    <div id="game-wrapper">
-        <canvas id="gameCanvas"></canvas>
-
-        <div id="hud">
-            <div class="hud-top">
-                <div class="status-panel">
-                    <div class="label">VIDA</div>
-                    <div class="bar">
-                        <div id="healthBar" class="bar-fill health"></div>
-                    </div>
-
-                    <div class="label">ENERGIA</div>
-                    <div class="bar">
-                        <div id="energyBar" class="bar-fill energy"></div>
-                    </div>
-                </div>
-
-                <div class="mission">
-                    <strong>ASTRA // SOBREVIVÊNCIA</strong>
-                    <span id="objective">Colete recursos e construa sua base.</span>
-                </div>
-
-                <div class="wave-panel">
-                    <span>ONDA</span>
-                    <strong id="wave">1</strong>
-                </div>
-            </div>
-
-            <div class="bottom-hud">
-                <div class="resource">
-                    <span class="resource-icon metal"></span>
-                    <span id="metal">0</span>
-                </div>
-
-                <div class="resource">
-                    <span class="resource-icon crystal"></span>
-                    <span id="crystal">0</span>
-                </div>
-
-                <div class="weapon">
-                    <span>RIFLE P-9</span>
-                    <small>CLIQUE ESQUERDO — ATIRAR</small>
-                </div>
-
-                <div class="build">
-                    <span>CONSTRUÇÃO</span>
-                    <small>Q — MODO CONSTRUÇÃO</small>
-                </div>
-            </div>
-
-            <div id="buildMode" class="build-mode hidden">
-                <div>▣ MODO CONSTRUÇÃO</div>
-                <small>CLIQUE PARA CONSTRUIR — CUSTO: 10 METAL</small>
-            </div>
-
-            <div id="damageFlash"></div>
-
-            <div id="gameOver" class="overlay hidden">
-                <div class="game-over-box">
-                    <h1>MISSÃO PERDIDA</h1>
-                    <p>O astronauta não resistiu às condições do planeta.</p>
-                    <button id="restartButton">REINICIAR MISSÃO</button>
-                </div>
-            </div>
-        </div>
+  <div id="ui-container">
+    <div id="hud">
+      <h1>Planet Civilitation</h1>
+      <p><strong>Planeta 1:</strong> Bioma Tundra/Ártico</p>
+      <p><strong>Terraformação:</strong> <span id="terra-percent">0%</span></p>
+      <div class="controls-info">
+        <p><strong>Controles:</strong></p>
+        <p>• WASD / Setas: Mover Personagem</p>
+        <p>• Tecla [E]: Construir Gerador de Terraformação</p>
+      </div>
+      <button id="build-btn">Construir Gerador [E]</button>
     </div>
+  </div>
 
-    <script src="script.js"></script>
+  <canvas id="game-canvas"></canvas>
+
+  <script src="script.js"></script>
 </body>
 </html>
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-html,
-body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #05080a;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #e9f6ff;
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #050508;
 }
 
-body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+#game-canvas {
+  width: 100vw;
+  height: 100vh;
+  display: block;
 }
 
-#game-wrapper {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    background: #10191b;
+#ui-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  color: #f1f5f9;
+  background: rgba(15, 23, 42, 0.88);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #38bdf8;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  width: 300px;
+  user-select: none;
 }
 
-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    cursor: crosshair;
+#hud h1 {
+  font-size: 1.25rem;
+  color: #38bdf8;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 6px;
 }
 
-/* HUD */
-
-#hud {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
+#hud p {
+  font-size: 0.875rem;
+  margin-bottom: 8px;
+  color: #cbd5e1;
 }
 
-.hud-top {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+.controls-info {
+  margin: 12px 0;
+  padding: 8px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 6px;
+  border-left: 3px solid #38bdf8;
 }
 
-.status-panel {
-    width: 220px;
-
-    padding: 12px;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(8, 15, 17, 0.94),
-            rgba(15, 28, 30, 0.82)
-        );
-
-    border-left: 3px solid #70d8ff;
-
-    box-shadow:
-        0 8px 30px rgba(0, 0, 0, 0.45),
-        inset 0 0 20px rgba(120, 210, 255, 0.03);
+.controls-info p {
+  font-size: 0.775rem;
+  margin-bottom: 3px;
+  color: #94a3b8;
 }
 
-.label {
-    margin-top: 3px;
-    margin-bottom: 5px;
-
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: #90a7ae;
+#build-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 10px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
 }
 
-.bar {
-    width: 100%;
-    height: 7px;
-    margin-bottom: 9px;
-
-    background: #172428;
-    border: 1px solid #263b40;
+#build-btn:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
 }
 
-.bar-fill {
-    height: 100%;
-    width: 100%;
-    transition: width 0.15s ease;
+#build-btn:active {
+  transform: translateY(1px);
+}
+// Configuração Principal da Cena 3D
+const canvas = document.getElementById('game-canvas');
+const scene = new THREE.Scene();
+
+// Céu inicial cinza (planeta sem vida)
+const initialSkyColor = new THREE.Color(0x1a1c23);
+const terraformedSkyColor = new THREE.Color(0x38bdf8);
+scene.background = initialSkyColor.clone();
+scene.fog = new THREE.FogExp2(0x1a1c23, 0.015);
+
+// Câmera Isométrica/Visão Superior
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 22, 22);
+camera.lookAt(0, 0, 0);
+
+// Renderizador
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+// Iluminação
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+scene.add(ambientLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(25, 40, 20);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.width = 1024;
+dirLight.shadow.mapSize.height = 1024;
+scene.add(dirLight);
+
+// Terreno Inicial Acinzentado (Planeta 1 - Tundra/Nevado Morto)
+const terrainGeo = new THREE.PlaneGeometry(80, 80, 32, 32);
+terrainGeo.rotateX(-Math.PI / 2);
+
+const initialTerrainColor = new THREE.Color(0x4a4e57);
+const targetTerrainColor = new THREE.Color(0x10b981); // Verde vivo de vegetação
+
+const terrainMat = new THREE.MeshStandardMaterial({
+  color: initialTerrainColor.clone(),
+  roughness: 0.9,
+  metalness: 0.1
+});
+
+const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+terrain.receiveShadow = true;
+scene.add(terrain);
+
+// Criação do Jogador (Traje Espacial Futurista)
+const playerGroup = new THREE.Group();
+
+// Corpo
+const bodyGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.6, 12);
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.5, roughness: 0.3 });
+const body = new THREE.Mesh(bodyGeo, bodyMat);
+body.position.y = 0.8;
+body.castShadow = true;
+playerGroup.add(body);
+
+// Capacete Espacial
+const helmetGeo = new THREE.SphereGeometry(0.45, 16, 16);
+const helmetMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9, roughness: 0.1 });
+const helmet = new THREE.Mesh(helmetGeo, helmetMat);
+helmet.position.set(0, 1.5, 0.1);
+helmet.castShadow = true;
+playerGroup.add(helmet);
+
+// Visor com Brilho
+const visorGeo = new THREE.BoxGeometry(0.4, 0.2, 0.2);
+const visorMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+const visor = new THREE.Mesh(visorGeo, visorMat);
+visor.position.set(0, 1.5, 0.4);
+playerGroup.add(visor);
+
+scene.add(playerGroup);
+
+// Gerenciamento de Inimigos / Monstros
+const enemies = [];
+
+function createCreature(x, z, scale, color, type = 'normal') {
+  const group = new THREE.Group();
+  
+  const geo = new THREE.BoxGeometry(scale, scale * 1.2, scale);
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.6 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.y = (scale * 1.2) / 2;
+  mesh.castShadow = true;
+  group.add(mesh);
+
+  group.position.set(x, 0, z);
+  scene.add(group);
+
+  let speed = 0.04;
+  if (type === 'fast') speed = 0.08;
+  if (type === 'boss') speed = 0.015; // Super monstro lento
+
+  enemies.push({ group, speed, type, scale });
 }
 
-.health {
-    background: linear-gradient(
-        90deg,
-        #d53e3e,
-        #ff704b
-    );
+// Spawn dos Monstros do Mapa
+createCreature(-12, -10, 0.8, 0xef4444, 'fast');   // Inimigo Rápido
+createCreature(15, -15, 1.2, 0xf97316, 'normal'); // Inimigo Normal
+createCreature(-5, -25, 3.5, 0x881337, 'boss');    // Super Hiper Mega Monstro Lento
 
-    box-shadow: 0 0 10px rgba(255, 80, 50, 0.4);
+// Lógica de Terraformação
+let terraformProgress = 0;
+
+function buildTerraformer() {
+  if (terraformProgress >= 100) return;
+
+  terraformProgress = Math.min(100, terraformProgress + 20);
+  document.getElementById('terra-percent').innerText = `${terraformProgress}%`;
+
+  // Construção 3D da Bomba/Gerador
+  const bGeo = new THREE.CylinderGeometry(0.8, 1.2, 2.2, 12);
+  const bMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.8, roughness: 0.2 });
+  const building = new THREE.Mesh(bGeo, bMat);
+  
+  // Posiciona próximo ao jogador
+  building.position.set(
+    playerGroup.position.x + (Math.random() - 0.5) * 4,
+    1.1,
+    playerGroup.position.z + (Math.random() - 0.5) * 4
+  );
+  building.castShadow = true;
+  scene.add(building);
+
+  // Animação de transição das cores (Céu e Terreno)
+  const factor = terraformProgress / 100;
+  terrainMat.color.lerpColors(initialTerrainColor, targetTerrainColor, factor);
+  scene.background.lerpColors(initialSkyColor, terraformedSkyColor, factor);
+  scene.fog.color.lerpColors(initialSkyColor, terraformedSkyColor, factor);
 }
 
-.energy {
-    background: linear-gradient(
-        90deg,
-        #2d91ff,
-        #65d7ff
-    );
-
-    box-shadow: 0 0 10px rgba(50, 180, 255, 0.4);
-}
-
-.mission {
-    text-align: center;
-    margin-top: 3px;
-}
-
-.mission strong {
-    display: block;
-
-    font-size: 13px;
-    letter-spacing: 3px;
-    color: #d8f4ff;
-
-    text-shadow: 0 0 12px rgba(100, 200, 255, 0.4);
-}
-
-.mission span {
-    display: block;
-
-    margin-top: 7px;
-
-    font-size: 11px;
-    color: #789198;
-}
-
-.wave-panel {
-    min-width: 90px;
-
-    padding: 10px 18px;
-
-    text-align: center;
-
-    background: rgba(8, 15, 17, 0.9);
-    border-right: 3px solid #d5a94c;
-}
-
-.wave-panel span {
-    display: block;
-
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: #82949a;
-}
-
-.wave-panel strong {
-    display: block;
-
-    margin-top: 3px;
-
-    font-size: 28px;
-    color: #e8c66a;
-}
-
-/* Bottom */
-
-.bottom-hud {
-    position: absolute;
-
-    left: 20px;
-    right: 20px;
-    bottom: 20px;
-
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.resource {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-
-    min-width: 90px;
-    height: 42px;
-
-    padding: 0 13px;
-
-    background: rgba(8, 14, 16, 0.93);
-    border: 1px solid #293d41;
-
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.resource-icon {
-    width: 13px;
-    height: 13px;
-
-    transform: rotate(45deg);
-}
-
-.metal {
-    background: #aeb9bd;
-    box-shadow: 0 0 8px rgba(180, 200, 210, 0.4);
-}
-
-.crystal {
-    background: #65dfff;
-    box-shadow: 0 0 9px rgba(80, 220, 255, 0.6);
-}
-
-.weapon,
-.build {
-    height: 42px;
-
-    padding: 6px 14px;
-
-    background: rgba(8, 14, 16, 0.93);
-    border: 1px solid #293d41;
-}
-
-.weapon {
-    margin-left: auto;
-}
-
-.weapon span,
-.build span {
-    display: block;
-
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: #d9f2fa;
-}
-
-.weapon small,
-.build small {
-    display: block;
-
-    margin-top: 4px;
-
-    font-size: 8px;
-    color: #71868d;
-    letter-spacing: 1px;
-}
-
-/* Construction */
-
-.build-mode {
-    position: absolute;
-
-    top: 105px;
-    left: 50%;
-
-    transform: translateX(-50%);
-
-    padding: 10px 20px;
-
-    background: rgba(7, 20, 24, 0.92);
-    border: 1px solid #57d8ff;
-
-    color: #75ddff;
-
-    font-size: 12px;
-    letter-spacing: 2px;
-
-    box-shadow:
-        0 0 20px rgba(60, 200, 255, 0.15);
-}
-
-.build-mode small {
-    display: block;
-
-    margin-top: 5px;
-
-    color: #6c858c;
-    font-size: 9px;
-    letter-spacing: 1px;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* Damage */
-
-#damageFlash {
-    position: absolute;
-    inset: 0;
-
-    background: rgba(255, 30, 20, 0.25);
-
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* Game over */
-
-.overlay {
-    position: absolute;
-    inset: 0;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background: rgba(2, 5, 6, 0.75);
-    backdrop-filter: blur(5px);
-
-    pointer-events: auto;
-}
-
-.game-over-box {
-    width: 420px;
-
-    padding: 35px;
-
-    text-align: center;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(12, 21, 23, 0.98),
-            rgba(7, 12, 14, 0.98)
-        );
-
-    border: 1px solid #6d3d3d;
-
-    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.8);
-}
-
-.game-over-box h1 {
-    color: #e75c52;
-
-    font-size: 27px;
-    letter-spacing: 4px;
-}
-
-.game-over-box p {
-    margin: 15px 0 25px;
-
-    color: #8b9ca1;
-    font-size: 13px;
-}
-
-.game-over-box button {
-    pointer-events: auto;
-
-    padding: 12px 22px;
-
-    background: #172d32;
-    border: 1px solid #54b8d5;
-
-    color: #c9f3ff;
-
-    cursor: pointer;
-
-    letter-spacing: 2px;
-    font-weight: bold;
-
-    transition: 0.2s;
-}
-
-.game-over-box button:hover {
-    background: #244952;
-    box-shadow: 0 0 20px rgba(70, 200, 240, 0.25);
-}
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-const healthBar = document.getElementById("healthBar");
-const energyBar = document.getElementById("energyBar");
-const metalText = document.getElementById("metal");
-const crystalText = document.getElementById("crystal");
-const waveText = document.getElementById("wave");
-const objectiveText = document.getElementById("objective");
-
-const buildModeUI = document.getElementById("buildMode");
-const damageFlash = document.getElementById("damageFlash");
-const gameOverUI = document.getElementById("gameOver");
-const restartButton = document.getElementById("restartButton");
-
-let width = 0;
-let height = 0;
-
-function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-}
-
-window.addEventListener("resize", resize);
-resize();
-
-/* =========================================================
-   UTILIDADES
-========================================================= */
-
-function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
-}
-
-function distance(a, b) {
-    return Math.hypot(a.x - b.x, a.y - b.y);
-}
-
-function random(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function circleCollision(a, b) {
-    return distance(a, b) < a.radius + b.radius;
-}
-
-/* =========================================================
-   INPUT
-========================================================= */
-
+// Entradas do Teclado
 const keys = {};
-
-const mouse = {
-    x: width / 2,
-    y: height / 2,
-    down: false
-};
-
-window.addEventListener("keydown", (e) => {
-    keys[e.key.toLowerCase()] = true;
-
-    if (e.key.toLowerCase() === "q") {
-        game.buildMode = !game.buildMode;
-
-        buildModeUI.classList.toggle(
-            "hidden",
-            !game.buildMode
-        );
-    }
+window.addEventListener('keydown', (e) => {
+  keys[e.key.toLowerCase()] = true;
+  if (e.key.toLowerCase() === 'e') {
+    buildTerraformer();
+  }
 });
 
-window.addEventListener("keyup", (e) => {
-    keys[e.key.toLowerCase()] = false;
+window.addEventListener('keyup', (e) => {
+  keys[e.key.toLowerCase()] = false;
 });
 
-canvas.addEventListener("mousemove", (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
+document.getElementById('build-btn').addEventListener('click', buildTerraformer);
+
+// Loop Principal do Jogo
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Movimentação do Jogador
+  const speed = 0.12;
+  if (keys['w'] || keys['arrowup']) playerGroup.position.z -= speed;
+  if (keys['s'] || keys['arrowdown']) playerGroup.position.z += speed;
+  if (keys['a'] || keys['arrowleft']) playerGroup.position.x -= speed;
+  if (keys['d'] || keys['arrowright']) playerGroup.position.x += speed;
+
+  // Câmera segue o Jogador
+  camera.position.x = playerGroup.position.x;
+  camera.position.z = playerGroup.position.z + 22;
+  camera.lookAt(playerGroup.position.x, 0, playerGroup.position.z);
+
+  // Comportamento dos Inimigos
+  enemies.forEach((enemy) => {
+    const dir = new THREE.Vector3().subVectors(playerGroup.position, enemy.group.position);
+    dir.y = 0;
+    dir.normalize();
+
+    enemy.group.position.x += dir.x * enemy.speed;
+    enemy.group.position.z += dir.z * enemy.speed;
+
+    // Rotação do monstro para encarar o jogador
+    enemy.group.lookAt(playerGroup.position.x, enemy.group.position.y, playerGroup.position.z);
+  });
+
+  renderer.render(scene, camera);
+}
+
+// Ajuste de Janela
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-canvas.addEventListener("mousedown", (e) => {
-    if (e.button === 0) {
-        mouse.down = true;
-
-        if (game.buildMode) {
-            buildStructure(mouse.x, mouse.y);
-        }
-    }
-});
-
-canvas.addEventListener("mouseup", (e) => {
-    if (e.button === 0) {
-        mouse.down = false;
-    }
-});
-
-restartButton.addEventListener("click", () => {
-    resetGame();
-});
-
-/* =========================================================
-   JOGADOR
-========================================================= */
-
-class Player {
-
-    constructor() {
-
-        this.x = width / 2;
-        this.y = height / 2;
-
-        this.radius = 19;
-
-        this.speed = 3.2;
-
-        this.health = 100;
-        this.maxHealth = 100;
-
-        this.energy = 100;
-        this.max
+animate();
