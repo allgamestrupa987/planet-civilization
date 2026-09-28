@@ -1,30 +1,3109 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Planet Civilitation</title>
-  <link rel="stylesheet" href="styles.css">
-  <!-- Lib 3D Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Planet Civilitation</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 </head>
+
 <body>
-  <div id="ui-container">
-    <div id="hud">
-      <h1>Planet Civilitation</h1>
-      <p><strong>Planeta 1:</strong> Bioma Tundra/Ártico</p>
-      <p><strong>Terraformação:</strong> <span id="terra-percent">0%</span></p>
-      <div class="controls-info">
-        <p><strong>Controles:</strong></p>
-        <p>• WASD / Setas: Mover Personagem</p>
-        <p>• Tecla [E]: Construir Gerador de Terraformação</p>
-      </div>
-      <button id="build-btn">Construir Gerador [E]</button>
+
+    <div id="loading">
+        <div class="loading-title">PLANET CIVILITATION</div>
+        <div class="loading-subtitle">
+            Inicializando sistema de colonização...
+        </div>
     </div>
-  </div>
 
-  <canvas id="game-canvas"></canvas>
+    <!-- MENU PRINCIPAL -->
 
-  <script src="script.js"></script>
+    <div id="mainMenu">
+
+        <h1>PLANET CIVILITATION</h1>
+
+        <p class="subtitle">
+            Explore • Sobreviva • Terraforme • Colonize
+        </p>
+
+        <div class="planet-selection">
+
+            <button class="planetButton" onclick="startGame(1)">
+                <span>PLANETA 01</span>
+                <small>FROSTERRA</small>
+                <small>Taiga • Tundra • Oceano Congelado</small>
+            </button>
+
+            <button class="planetButton" onclick="startGame(2)">
+                <span>PLANETA 02</span>
+                <small>ARIDON</small>
+                <small>Grande deserto • Escassez de água</small>
+            </button>
+
+            <button class="planetButton" onclick="startGame(3)">
+                <span>PLANETA 03</span>
+                <small>VERDANTIS</small>
+                <small>Floresta • Vida abundante • Muitos monstros</small>
+            </button>
+
+        </div>
+
+        <p class="controls">
+            WASD = Movimento |
+            Mouse = Mira |
+            Clique = Atirar |
+            Espaço = Ataque corpo a corpo |
+            B = Construir |
+            E = Interagir
+        </p>
+
+    </div>
+
+
+    <!-- HUD -->
+
+    <div id="hud">
+
+        <div id="topBar">
+
+            <div class="gameTitle">
+                PLANET CIVILITATION
+            </div>
+
+            <div id="planetName">
+                PLANETA
+            </div>
+
+            <button onclick="pauseGame()" id="pauseButton">
+                ☰
+            </button>
+
+        </div>
+
+
+        <div id="stats">
+
+            <div class="stat">
+                <span>❤️ VIDA</span>
+                <div class="bar">
+                    <div id="healthBar" class="fill health"></div>
+                </div>
+                <b id="healthText">100</b>
+            </div>
+
+            <div class="stat">
+                <span>🫁 OXIGÊNIO</span>
+                <div class="bar">
+                    <div id="oxygenBar" class="fill oxygen"></div>
+                </div>
+                <b id="oxygenText">100</b>
+            </div>
+
+            <div class="stat">
+                <span>⚡ ENERGIA</span>
+                <div class="bar">
+                    <div id="energyBar" class="fill energy"></div>
+                </div>
+                <b id="energyText">100</b>
+            </div>
+
+        </div>
+
+
+        <div id="resources">
+
+            <div>💧 Água: <b id="water">50</b></div>
+            <div>🌱 Biomassa: <b id="biomass">20</b></div>
+            <div>⛏️ Minério: <b id="ore">100</b></div>
+            <div>🔋 Energia: <b id="power">50</b></div>
+
+        </div>
+
+
+        <div id="terraformPanel">
+
+            <div class="terraformTitle">
+                TERRAFORMAÇÃO
+            </div>
+
+            <div class="terraformBar">
+                <div id="terraformFill"></div>
+            </div>
+
+            <span id="terraformText">
+                0%
+            </span>
+
+        </div>
+
+
+        <div id="weaponPanel">
+
+            <div>
+                🔫 Rifle
+            </div>
+
+            <div>
+                Dano: <b id="weaponDamage">20</b>
+            </div>
+
+            <div>
+                Munição: <b id="ammo">100</b>
+            </div>
+
+        </div>
+
+
+        <div id="messageBox">
+            Bem-vindo, colonizador.
+        </div>
+
+    </div>
+
+
+    <!-- MENU DE CONSTRUÇÃO -->
+
+    <div id="buildMenu">
+
+        <h2>CONSTRUÇÕES</h2>
+
+        <button onclick="buildStructure('water')">
+            💧 Bomba de Água
+            <small>50 minério</small>
+        </button>
+
+        <button onclick="buildStructure('plant')">
+            🌱 Gerador de Vegetação
+            <small>30 minério + 20 água</small>
+        </button>
+
+        <button onclick="buildStructure('energy')">
+            ⚡ Gerador de Energia
+            <small>40 minério</small>
+        </button>
+
+        <button onclick="buildStructure('oxygen')">
+            🫁 Gerador de Oxigênio
+            <small>50 minério</small>
+        </button>
+
+        <button onclick="closeBuildMenu()">
+            CANCELAR
+        </button>
+
+    </div>
+
+
+    <!-- PAUSA -->
+
+    <div id="pauseMenu">
+
+        <h1>JOGO PAUSADO</h1>
+
+        <button onclick="resumeGame()">
+            CONTINUAR
+        </button>
+
+        <button onclick="saveGame()">
+            SALVAR
+        </button>
+
+        <button onclick="location.reload()">
+            MENU PRINCIPAL
+        </button>
+
+    </div>
+
+
+    <canvas id="gameCanvas"></canvas>
+
+
+    <script src="script.js"></script>
+
 </body>
 </html>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow: hidden;
+    background: #020508;
+    color: white;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+}
+
+#gameCanvas {
+    position: fixed;
+    left: 0;
+    top: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    z-index: 1;
+}
+
+
+/* =========================
+   MENU PRINCIPAL
+========================= */
+
+#mainMenu {
+
+    position: fixed;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 100;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(25, 70, 80, 0.5),
+            rgba(1, 5, 8, 0.97)
+        );
+
+    text-align: center;
+}
+
+#mainMenu h1 {
+
+    font-size: 64px;
+
+    letter-spacing: 8px;
+
+    color: #7affd7;
+
+    text-shadow:
+        0 0 10px #00ffc8,
+        0 0 30px #00a98b;
+
+    margin-bottom: 10px;
+}
+
+.subtitle {
+
+    color: #a9c9c4;
+
+    margin-bottom: 50px;
+
+    font-size: 18px;
+
+    letter-spacing: 3px;
+}
+
+
+.planet-selection {
+
+    display: flex;
+
+    gap: 20px;
+
+    max-width: 1100px;
+
+    justify-content: center;
+}
+
+
+.planetButton {
+
+    width: 300px;
+
+    min-height: 180px;
+
+    padding: 25px;
+
+    color: white;
+
+    border: 1px solid rgba(120, 255, 220, .35);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20, 40, 45, .95),
+            rgba(5, 15, 20, .95)
+        );
+
+    cursor: pointer;
+
+    transition: .25s;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    align-items: center;
+}
+
+.planetButton span {
+
+    font-size: 22px;
+
+    color: #7affd7;
+
+    font-weight: bold;
+}
+
+.planetButton small {
+
+    color: #aabdb9;
+
+    font-size: 13px;
+}
+
+.planetButton:hover {
+
+    transform: translateY(-8px);
+
+    border-color: #00ffd0;
+
+    box-shadow:
+        0 0 30px rgba(0,255,200,.2);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20, 65, 65, .95),
+            rgba(5, 20, 25, .95)
+        );
+}
+
+.controls {
+
+    margin-top: 50px;
+
+    color: #71817e;
+
+    font-size: 12px;
+}
+
+
+/* =========================
+   LOADING
+========================= */
+
+#loading {
+
+    position: fixed;
+
+    inset: 0;
+
+    background: #020506;
+
+    z-index: 200;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+}
+
+.loading-title {
+
+    font-size: 50px;
+
+    letter-spacing: 7px;
+
+    color: #6fffd2;
+}
+
+.loading-subtitle {
+
+    margin-top: 20px;
+
+    color: #718b87;
+}
+
+
+/* =========================
+   HUD
+========================= */
+
+#hud {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 10;
+
+    pointer-events: none;
+
+    display: none;
+}
+
+
+#topBar {
+
+    position: absolute;
+
+    left: 20px;
+    right: 20px;
+    top: 15px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+
+.gameTitle {
+
+    font-weight: bold;
+
+    color: #76ffd6;
+
+    letter-spacing: 3px;
+}
+
+#planetName {
+
+    position: absolute;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    color: white;
+
+    font-size: 20px;
+
+    letter-spacing: 4px;
+}
+
+#pauseButton {
+
+    pointer-events: auto;
+
+    background: rgba(5,15,20,.8);
+
+    color: white;
+
+    border: 1px solid #43655f;
+
+    padding: 10px 15px;
+
+    cursor: pointer;
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+#stats {
+
+    position: absolute;
+
+    left: 20px;
+
+    top: 65px;
+
+    width: 240px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.stat {
+
+    background: rgba(0, 10, 15, .7);
+
+    padding: 7px;
+
+    border-left: 2px solid #00dcb1;
+
+    font-size: 11px;
+}
+
+.stat span {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #b8ceca;
+}
+
+.bar {
+
+    width: 180px;
+
+    height: 8px;
+
+    background: #182427;
+
+    display: inline-block;
+
+    margin-right: 7px;
+}
+
+.fill {
+
+    height: 100%;
+
+    width: 100%;
+
+    transition: width .2s;
+}
+
+.health {
+    background: #ff4f5c;
+}
+
+.oxygen {
+    background: #61dfff;
+}
+
+.energy {
+    background: #ffc857;
+}
+
+
+/* =========================
+   RESOURCES
+========================= */
+
+#resources {
+
+    position: absolute;
+
+    right: 20px;
+
+    top: 65px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    background: rgba(0,10,15,.65);
+
+    padding: 12px;
+
+    font-size: 13px;
+}
+
+
+/* =========================
+   TERRAFORMAÇÃO
+========================= */
+
+#terraformPanel {
+
+    position: absolute;
+
+    top: 20px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 250px;
+
+    text-align: center;
+}
+
+.terraformTitle {
+
+    font-size: 11px;
+
+    color: #8ba8a2;
+
+    letter-spacing: 2px;
+
+    margin-bottom: 5px;
+}
+
+.terraformBar {
+
+    height: 9px;
+
+    background: #172325;
+
+    border: 1px solid #33534c;
+}
+
+#terraformFill {
+
+    width: 0%;
+
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #527b7d,
+            #49e59c,
+            #8dff8a
+        );
+
+    transition: width .4s;
+}
+
+#terraformText {
+
+    font-size: 11px;
+
+    color: #a5d8c4;
+}
+
+
+/* =========================
+   ARMA
+========================= */
+
+#weaponPanel {
+
+    position: absolute;
+
+    bottom: 25px;
+
+    right: 25px;
+
+    padding: 12px;
+
+    min-width: 170px;
+
+    background: rgba(0,10,15,.75);
+
+    border: 1px solid #34534d;
+
+    font-size: 13px;
+
+    line-height: 1.8;
+}
+
+
+/* =========================
+   MENSAGEM
+========================= */
+
+#messageBox {
+
+    position: absolute;
+
+    bottom: 25px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    padding: 10px 20px;
+
+    background: rgba(0,0,0,.7);
+
+    border-bottom: 2px solid #42d7b4;
+
+    color: #d7ebe6;
+
+    font-size: 13px;
+
+    opacity: 0;
+
+    transition: opacity .2s;
+}
+
+
+/* =========================
+   BUILD MENU
+========================= */
+
+#buildMenu {
+
+    position: fixed;
+
+    right: 30px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 270px;
+
+    padding: 20px;
+
+    background:
+        rgba(3,13,17,.97);
+
+    border: 1px solid #31645b;
+
+    z-index: 50;
+
+    display: none;
+
+    box-shadow:
+        0 0 40px rgba(0,0,0,.7);
+}
+
+#buildMenu h2 {
+
+    color: #78ffd7;
+
+    font-size: 18px;
+
+    margin-bottom: 15px;
+}
+
+#buildMenu button {
+
+    width: 100%;
+
+    padding: 12px;
+
+    margin-bottom: 8px;
+
+    background: #102326;
+
+    border: 1px solid #315953;
+
+    color: white;
+
+    cursor: pointer;
+
+    text-align: left;
+}
+
+#buildMenu button:hover {
+
+    background: #173d3d;
+
+    border-color: #58f3cb;
+}
+
+#buildMenu small {
+
+    display: block;
+
+    color: #79928e;
+
+    margin-top: 4px;
+}
+
+
+/* =========================
+   PAUSE
+========================= */
+
+#pauseMenu {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 150;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-direction: column;
+
+    gap: 15px;
+
+    background: rgba(0,0,0,.82);
+}
+
+#pauseMenu h1 {
+
+    color: #7affe0;
+
+    letter-spacing: 4px;
+}
+
+#pauseMenu button {
+
+    width: 230px;
+
+    padding: 13px;
+
+    background: #102a2b;
+
+    color: white;
+
+    border: 1px solid #438e7e;
+
+    cursor: pointer;
+}
+
+
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media(max-width:900px) {
+
+    #mainMenu h1 {
+        font-size: 38px;
+    }
+
+    .planet-selection {
+        flex-direction: column;
+    }
+
+    .planetButton {
+        min-height: 100px;
+    }
+
+    #planetName {
+        display: none;
+    }
+
+    #resources {
+        top: 170px;
+    }
+}
+/* =========================================================
+   PLANET CIVILITATION
+   Protótipo 3D
+========================================================= */
+
+
+/* =========================================================
+   CONFIGURAÇÕES
+========================================================= */
+
+const CONFIG = {
+
+    mapSize: 220,
+
+    playerSpeed: 0.16,
+
+    enemySpawnDistance: 30,
+
+    maxEnemiesPlanet1: 12,
+
+    maxEnemiesPlanet2: 18,
+
+    maxEnemiesPlanet3: 45,
+
+    gravity: 0.02,
+
+    bulletSpeed: 1.4,
+
+    terraformationPerStructure: 5
+};
+
+
+/* =========================================================
+   VARIÁVEIS GLOBAIS
+========================================================= */
+
+let scene;
+
+let camera;
+
+let renderer;
+
+let clock;
+
+let player;
+
+let playerMesh;
+
+let planetMesh;
+
+let ground;
+
+let gameRunning = false;
+
+let paused = false;
+
+let currentPlanet = 1;
+
+let enemies = [];
+
+let bullets = [];
+
+let structures = [];
+
+let particles = [];
+
+let keys = {};
+
+let mouse = {
+    x: 0,
+    y: 0,
+    down: false
+};
+
+let lastShot = 0;
+
+let meleeCooldown = 0;
+
+let messageTimeout;
+
+
+/* =========================================================
+   JOGADOR
+========================================================= */
+
+const playerData = {
+
+    health: 100,
+
+    maxHealth: 100,
+
+    oxygen: 100,
+
+    maxOxygen: 100,
+
+    energy: 100,
+
+    maxEnergy: 100,
+
+    level: 1,
+
+    experience: 0,
+
+    water: 50,
+
+    biomass: 20,
+
+    ore: 100,
+
+    power: 50,
+
+    ammo: 100,
+
+    damage: 20,
+
+    armor: 20,
+
+    armorDurability: 100,
+
+    terraformation: 0,
+
+    waterGenerators: 0,
+
+    plantGenerators: 0,
+
+    energyGenerators: 0,
+
+    oxygenGenerators: 0
+};
+
+
+/* =========================================================
+   DADOS DOS PLANETAS
+========================================================= */
+
+const planets = {
+
+    1: {
+
+        name: "FROSTERRA",
+
+        sky: 0x87939a,
+
+        ground: 0x60696c,
+
+        green: 0x5e8c6a,
+
+        biomes: [
+            "TAIGA NEVADA",
+            "OCEANO CONGELADO",
+            "TUNDRA"
+        ],
+
+        enemyColors: [
+            0x8fd4df,
+            0x7b98a2,
+            0xb3c4c7
+        ],
+
+        maxEnemies: 12,
+
+        boss: true
+    },
+
+    2: {
+
+        name: "ARIDON",
+
+        sky: 0xe1a05b,
+
+        ground: 0xb96831,
+
+        green: 0x9d8b35,
+
+        biomes: [
+            "DESERTO"
+        ],
+
+        enemyColors: [
+            0xd77b37,
+            0x9e4f2d,
+            0xf2bd54
+        ],
+
+        maxEnemies: 18,
+
+        boss: true
+    },
+
+    3: {
+
+        name: "VERDANTIS",
+
+        sky: 0x64a67a,
+
+        ground: 0x245638,
+
+        green: 0x38bd62,
+
+        biomes: [
+            "FLORESTA",
+            "SELVA",
+            "PLANÍCIE VERDE"
+        ],
+
+        enemyColors: [
+            0x54d878,
+            0x9bde45,
+            0x613a8c,
+            0xdd425e
+        ],
+
+        maxEnemies: 45,
+
+        boss: true
+    }
+};
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+window.addEventListener("load", () => {
+
+    setTimeout(() => {
+
+        document.getElementById("loading").style.display = "none";
+
+    }, 1000);
+
+});
+
+
+function startGame(planetId) {
+
+    currentPlanet = planetId;
+
+    document.getElementById("mainMenu").style.display = "none";
+
+    document.getElementById("hud").style.display = "block";
+
+    initThree();
+
+    createPlanet();
+
+    createPlayer();
+
+    createInitialBase();
+
+    spawnEnemies();
+
+    gameRunning = true;
+
+    showMessage(
+        "Colonização iniciada em " +
+        planets[currentPlanet].name
+    );
+
+    animate();
+}
+
+
+/* =========================================================
+   THREE.JS
+========================================================= */
+
+function initThree() {
+
+    scene = new THREE.Scene();
+
+    const planet = planets[currentPlanet];
+
+    scene.background =
+        new THREE.Color(planet.sky);
+
+
+    /* CÂMERA */
+
+    camera = new THREE.PerspectiveCamera(
+
+        65,
+
+        window.innerWidth / window.innerHeight,
+
+        0.1,
+
+        1000
+
+    );
+
+    camera.position.set(
+        0,
+        8,
+        10
+    );
+
+
+    /* RENDERER */
+
+    renderer = new THREE.WebGLRenderer({
+
+        antialias: true,
+
+        canvas: document.getElementById(
+            "gameCanvas"
+        )
+    });
+
+    renderer.setSize(
+
+        window.innerWidth,
+
+        window.innerHeight
+
+    );
+
+    renderer.setPixelRatio(
+
+        Math.min(
+            window.devicePixelRatio,
+            2
+        )
+
+    );
+
+
+    /* ILUMINAÇÃO */
+
+    const ambient =
+        new THREE.AmbientLight(
+            0xffffff,
+            1.2
+        );
+
+    scene.add(ambient);
+
+
+    const directional =
+        new THREE.DirectionalLight(
+            0xffffff,
+            2
+        );
+
+    directional.position.set(
+        50,
+        100,
+        20
+    );
+
+    scene.add(directional);
+
+
+    clock = new THREE.Clock();
+
+
+    window.addEventListener(
+        "resize",
+        onWindowResize
+    );
+
+
+    /* MOUSE */
+
+    window.addEventListener(
+        "mousemove",
+        onMouseMove
+    );
+
+    window.addEventListener(
+        "mousedown",
+        () => {
+            mouse.down = true;
+        }
+    );
+
+    window.addEventListener(
+        "mouseup",
+        () => {
+            mouse.down = false;
+        }
+    );
+
+
+    /* TECLADO */
+
+    window.addEventListener(
+        "keydown",
+        e => {
+
+            keys[e.code] = true;
+
+            if (e.code === "KeyB") {
+
+                toggleBuildMenu();
+
+            }
+
+            if (e.code === "Space") {
+
+                meleeAttack();
+
+            }
+
+            if (e.code === "Escape") {
+
+                pauseGame();
+
+            }
+
+        }
+    );
+
+    window.addEventListener(
+        "keyup",
+        e => {
+
+            keys[e.code] = false;
+
+        }
+    );
+}
+
+
+/* =========================================================
+   PLANETA / TERRENO
+========================================================= */
+
+function createPlanet() {
+
+    const data = planets[currentPlanet];
+
+
+    /* TERRENO */
+
+    const geometry =
+        new THREE.PlaneGeometry(
+            CONFIG.mapSize,
+            CONFIG.mapSize,
+            50,
+            50
+        );
+
+
+    const material =
+        new THREE.MeshStandardMaterial({
+
+            color: data.ground,
+
+            roughness: 1,
+
+            metalness: 0
+
+        });
+
+
+    ground =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+
+    ground.rotation.x =
+        -Math.PI / 2;
+
+
+    scene.add(ground);
+
+
+    /* MONTANHAS */
+
+    createTerrainDetails();
+
+
+    document.getElementById(
+        "planetName"
+    ).textContent =
+        data.name;
+}
+
+
+/* =========================================================
+   DETALHES DO TERRENO
+========================================================= */
+
+function createTerrainDetails() {
+
+    const data = planets[currentPlanet];
+
+    for (
+        let i = 0;
+        i < 80;
+        i++
+    ) {
+
+        const size =
+            1 +
+            Math.random() * 5;
+
+
+        let geometry =
+            new THREE.ConeGeometry(
+                size,
+                size * 2,
+                5
+            );
+
+
+        let material =
+            new THREE.MeshStandardMaterial({
+
+                color:
+                    data.ground,
+
+                roughness: 1
+
+            });
+
+
+        const object =
+            new THREE.Mesh(
+                geometry,
+                material
+            );
+
+
+        object.position.x =
+            (Math.random() - .5)
+            * CONFIG.mapSize;
+
+        object.position.z =
+            (Math.random() - .5)
+            * CONFIG.mapSize;
+
+        object.position.y =
+            size;
+
+
+        scene.add(object);
+    }
+}
+
+
+/* =========================================================
+   JOGADOR
+========================================================= */
+
+function createPlayer() {
+
+    const geometry =
+        new THREE.CapsuleGeometry(
+            .55,
+            1.1,
+            5,
+            10
+        );
+
+
+    const material =
+        new THREE.MeshStandardMaterial({
+
+            color: 0xdde8e6,
+
+            metalness: .6,
+
+            roughness: .35
+
+        });
+
+
+    playerMesh =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+
+    playerMesh.position.set(
+        0,
+        1,
+        0
+    );
+
+
+    scene.add(playerMesh);
+
+    player = playerMesh;
+}
+
+
+/* =========================================================
+   BASE INICIAL
+========================================================= */
+
+function createInitialBase() {
+
+    createStructure(
+        "base",
+        0,
+        0,
+        true
+    );
+}
+
+
+/* =========================================================
+   MOVIMENTO
+========================================================= */
+
+function updatePlayer() {
+
+    if (!player)
+        return;
+
+
+    const direction =
+        new THREE.Vector3();
+
+
+    if (keys["KeyW"])
+        direction.z -= 1;
+
+    if (keys["KeyS"])
+        direction.z += 1;
+
+    if (keys["KeyA"])
+        direction.x -= 1;
+
+    if (keys["KeyD"])
+        direction.x += 1;
+
+
+    if (
+        direction.length() > 0
+    ) {
+
+        direction.normalize();
+
+        player.position.x +=
+            direction.x *
+            CONFIG.playerSpeed;
+
+        player.position.z +=
+            direction.z *
+            CONFIG.playerSpeed;
+
+        player.rotation.y =
+            Math.atan2(
+                direction.x,
+                direction.z
+            );
+    }
+
+
+    const limit =
+        CONFIG.mapSize / 2 - 4;
+
+
+    player.position.x =
+        THREE.MathUtils.clamp(
+            player.position.x,
+            -limit,
+            limit
+        );
+
+    player.position.z =
+        THREE.MathUtils.clamp(
+            player.position.z,
+            -limit,
+            limit
+        );
+
+
+    updateCamera();
+
+
+    /* OXIGÊNIO */
+
+    playerData.oxygen -=
+        0.003;
+
+
+    if (
+        playerData.oxygen <= 0
+    ) {
+
+        playerData.oxygen = 0;
+
+        playerData.health -=
+            0.03;
+
+    }
+
+
+    /* RECUPERAÇÃO NA BASE */
+
+    const distance =
+        player.position.distanceTo(
+            new THREE.Vector3(0,1,0)
+        );
+
+
+    if (distance < 8) {
+
+        playerData.oxygen += .15;
+
+        playerData.health += .05;
+
+        playerData.energy += .1;
+
+    }
+
+
+    playerData.oxygen =
+        Math.min(
+            playerData.oxygen,
+            playerData.maxOxygen
+        );
+
+    playerData.health =
+        Math.min(
+            playerData.health,
+            playerData.maxHealth
+        );
+
+    playerData.energy =
+        Math.min(
+            playerData.energy,
+            playerData.maxEnergy
+        );
+}
+
+
+/* =========================================================
+   CÂMERA
+========================================================= */
+
+function updateCamera() {
+
+    if (!player)
+        return;
+
+
+    const target =
+        new THREE.Vector3(
+            player.position.x,
+            player.position.y + 5,
+            player.position.z + 7
+        );
+
+
+    camera.position.lerp(
+        target,
+        .08
+    );
+
+
+    camera.lookAt(
+        player.position
+    );
+}
+
+
+/* =========================================================
+   INIMIGOS
+========================================================= */
+
+class Enemy {
+
+    constructor(type, boss = false) {
+
+        this.type = type;
+
+        this.boss = boss;
+
+        this.health =
+            boss ? 1000 : 60 + Math.random() * 80;
+
+        this.maxHealth =
+            this.health;
+
+        this.speed =
+            boss
+                ? .025
+                : .04 + Math.random() * .06;
+
+        this.damage =
+            boss
+                ? 30
+                : 5 + Math.random() * 10;
+
+
+        this.jump =
+            type === "jumper";
+
+
+        const colors =
+            planets[currentPlanet]
+            .enemyColors;
+
+
+        const color =
+            colors[
+                Math.floor(
+                    Math.random() *
+                    colors.length
+                )
+            ];
+
+
+        let geometry;
+
+
+        if (boss) {
+
+            geometry =
+                new THREE.IcosahedronGeometry(
+                    3,
+                    1
+                );
+
+        } else {
+
+            geometry =
+                new THREE.SphereGeometry(
+                    type === "fast"
+                        ? .65
+                        : 1,
+                    8,
+                    8
+                );
+
+        }
+
+
+        const material =
+            new THREE.MeshStandardMaterial({
+
+                color: color,
+
+                roughness: .75,
+
+                metalness: .1
+
+            });
+
+
+        this.mesh =
+            new THREE.Mesh(
+                geometry,
+                material
+            );
+
+
+        const angle =
+            Math.random() *
+            Math.PI *
+            2;
+
+
+        const distance =
+            30 +
+            Math.random() *
+            60;
+
+
+        this.mesh.position.set(
+
+            player.position.x +
+            Math.cos(angle) *
+            distance,
+
+            boss ? 3 : 1,
+
+            player.position.z +
+            Math.sin(angle) *
+            distance
+
+        );
+
+
+        scene.add(this.mesh);
+
+
+        enemies.push(this);
+
+
+        if (boss) {
+
+            showMessage(
+                "⚠️ ALERTA: SUPER HIPER MEGA CRIATURA DETECTADA"
+            );
+
+        }
+    }
+
+
+    update() {
+
+        if (!player)
+            return;
+
+
+        const target =
+            player.position;
+
+
+        const direction =
+            new THREE.Vector3(
+
+                target.x -
+                this.mesh.position.x,
+
+                0,
+
+                target.z -
+                this.mesh.position.z
+
+            );
+
+
+        const distance =
+            direction.length();
+
+
+        if (
+            distance > 2
+        ) {
+
+            direction.normalize();
+
+            this.mesh.position.x +=
+                direction.x *
+                this.speed;
+
+            this.mesh.position.z +=
+                direction.z *
+                this.speed;
+
+        } else {
+
+            playerData.health -=
+                this.damage *
+                .01;
+
+        }
+
+
+        this.mesh.lookAt(
+            player.position
+        );
+
+
+        /* PULO */
+
+        if (
+            this.jump &&
+            Math.random() < .01
+        ) {
+
+            this.mesh.position.y =
+                3;
+
+        }
+
+
+        if (
+            this.mesh.position.y > 1
+        ) {
+
+            this.mesh.position.y -=
+                .04;
+
+        }
+
+
+        if (
+            this.health <= 0
+        ) {
+
+            this.destroy();
+
+        }
+
+    }
+
+
+    destroy() {
+
+        scene.remove(
+            this.mesh
+        );
+
+
+        const index =
+            enemies.indexOf(this);
+
+
+        if (
+            index !== -1
+        ) {
+
+            enemies.splice(
+                index,
+                1
+            );
+
+        }
+
+
+        playerData.experience +=
+            this.boss ? 100 : 20;
+
+
+        playerData.ore +=
+            this.boss ? 100 : 5;
+
+
+        checkLevelUp();
+
+    }
+
+}
+
+
+/* =========================================================
+   SPAWN DE INIMIGOS
+========================================================= */
+
+function spawnEnemies() {
+
+    const amount =
+        planets[currentPlanet]
+        .maxEnemies;
+
+
+    for (
+        let i = 0;
+        i < amount;
+        i++
+    ) {
+
+        let type =
+            "normal";
+
+
+        if (
+            Math.random() < .3
+        )
+            type = "fast";
+
+
+        if (
+            Math.random() < .2
+        )
+            type = "jumper";
+
+
+        new Enemy(
+            type,
+            false
+        );
+    }
+
+
+    /* BOSS */
+
+    setTimeout(() => {
+
+        new Enemy(
+            "boss",
+            true
+        );
+
+    }, 5000);
+}
+
+
+/* =========================================================
+   TIRO
+========================================================= */
+
+function shoot() {
+
+    if (!gameRunning)
+        return;
+
+
+    if (
+        Date.now() -
+        lastShot <
+        180
+    )
+        return;
+
+
+    if (
+        playerData.ammo <= 0
+    ) {
+
+        showMessage(
+            "Sem munição!"
+        );
+
+        return;
+    }
+
+
+    lastShot =
+        Date.now();
+
+
+    playerData.ammo--;
+
+
+    const geometry =
+        new THREE.SphereGeometry(
+            .12,
+            6,
+            6
+        );
+
+
+    const material =
+        new THREE.MeshBasicMaterial({
+
+            color: 0x63ffe0
+
+        });
+
+
+    const bullet =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+
+    bullet.position.copy(
+        player.position
+    );
+
+
+    bullet.position.y += .5;
+
+
+    const direction =
+        new THREE.Vector3(
+            mouse.x,
+            0,
+            mouse.y
+        );
+
+
+    if (
+        direction.length() === 0
+    ) {
+
+        direction.set(
+            0,
+            0,
+            -1
+        );
+
+    }
+
+
+    direction.normalize();
+
+
+    bullet.userData.velocity =
+        direction.multiplyScalar(
+            CONFIG.bulletSpeed
+        );
+
+
+    bullet.userData.life =
+        100;
+
+
+    scene.add(
+        bullet
+    );
+
+
+    bullets.push(
+        bullet
+    );
+}
+
+
+/* =========================================================
+   ATUALIZA BALAS
+========================================================= */
+
+function updateBullets() {
+
+    for (
+        let i = bullets.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const bullet =
+            bullets[i];
+
+
+        bullet.position.add(
+            bullet.userData.velocity
+        );
+
+
+        bullet.userData.life--;
+
+
+        let hit = false;
+
+
+        for (
+            let j = enemies.length - 1;
+            j >= 0;
+            j--
+        ) {
+
+            const enemy =
+                enemies[j];
+
+
+            const distance =
+                bullet.position.distanceTo(
+                    enemy.mesh.position
+                );
+
+
+            if (
+                distance < 1.7
+            ) {
+
+                enemy.health -=
+                    playerData.damage;
+
+                hit = true;
+
+                break;
+
+            }
+        }
+
+
+        if (
+            hit ||
+            bullet.userData.life <= 0
+        ) {
+
+            scene.remove(
+                bullet
+            );
+
+            bullets.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+}
+
+
+/* =========================================================
+   ATAQUE CORPO A CORPO
+========================================================= */
+
+function meleeAttack() {
+
+    if (
+        Date.now() -
+        meleeCooldown <
+        400
+    )
+        return;
+
+
+    meleeCooldown =
+        Date.now();
+
+
+    showMessage(
+        "⚔️ Ataque corpo a corpo!"
+    );
+
+
+    for (
+        const enemy of enemies
+    ) {
+
+        const distance =
+            player.position.distanceTo(
+                enemy.mesh.position
+            );
+
+
+        if (
+            distance < 4
+        ) {
+
+            enemy.health -=
+                playerData.damage *
+                1.5;
+
+        }
+    }
+}
+
+
+/* =========================================================
+   CONSTRUÇÕES
+========================================================= */
+
+function toggleBuildMenu() {
+
+    const menu =
+        document.getElementById(
+            "buildMenu"
+        );
+
+
+    if (
+        menu.style.display ===
+        "block"
+    ) {
+
+        menu.style.display =
+            "none";
+
+    } else {
+
+        menu.style.display =
+            "block";
+
+    }
+}
+
+
+function closeBuildMenu() {
+
+    document.getElementById(
+        "buildMenu"
+    ).style.display =
+        "none";
+}
+
+
+function buildStructure(type) {
+
+    const costs = {
+
+        water: {
+            ore: 50
+        },
+
+        plant: {
+            ore: 30,
+            water: 20
+        },
+
+        energy: {
+            ore: 40
+        },
+
+        oxygen: {
+            ore: 50
+        }
+
+    };
+
+
+    const cost =
+        costs[type];
+
+
+    if (
+        playerData.ore <
+        (cost.ore || 0)
+    ) {
+
+        showMessage(
+            "Minério insuficiente!"
+        );
+
+        return;
+    }
+
+
+    if (
+        playerData.water <
+        (cost.water || 0)
+    ) {
+
+        showMessage(
+            "Água insuficiente!"
+        );
+
+        return;
+    }
+
+
+    playerData.ore -=
+        cost.ore || 0;
+
+    playerData.water -=
+        cost.water || 0;
+
+
+    const x =
+        player.position.x +
+        (Math.random() - .5) *
+        8;
+
+
+    const z =
+        player.position.z +
+        (Math.random() - .5) *
+        8;
+
+
+    createStructure(
+        type,
+        x,
+        z
+    );
+
+
+    closeBuildMenu();
+
+
+    showMessage(
+        "Construção concluída!"
+    );
+}
+
+
+/* =========================================================
+   CRIAÇÃO DE ESTRUTURA
+========================================================= */
+
+function createStructure(
+    type,
+    x,
+    z,
+    initial = false
+) {
+
+    let color;
+
+    let size = 2;
+
+
+    switch (type) {
+
+        case "base":
+
+            color =
+                0x566e73;
+
+            size = 3;
+
+            break;
+
+
+        case "water":
+
+            color =
+                0x37aee5;
+
+            size = 1.5;
+
+            playerData.waterGenerators++;
+
+            break;
+
+
+        case "plant":
+
+            color =
+                0x39d46b;
+
+            size = 1.3;
+
+            playerData.plantGenerators++;
+
+            break;
+
+
+        case "energy":
+
+            color =
+                0xffd447;
+
+            size = 1.5;
+
+            playerData.energyGenerators++;
+
+            break;
+
+
+        case "oxygen":
+
+            color =
+                0x8de8ff;
+
+            size = 1.4;
+
+            playerData.oxygenGenerators++;
+
+            break;
+    }
+
+
+    const geometry =
+        new THREE.BoxGeometry(
+            size,
+            size,
+            size
+        );
+
+
+    const material =
+        new THREE.MeshStandardMaterial({
+
+            color: color,
+
+            metalness: .5,
+
+            roughness: .5
+
+        });
+
+
+    const mesh =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+
+    mesh.position.set(
+        x,
+        size / 2,
+        z
+    );
+
+
+    scene.add(mesh);
+
+
+    structures.push({
+
+        mesh: mesh,
+
+        type: type
+
+    });
+
+
+    if (!initial) {
+
+        playerData.terraformation +=
+            CONFIG.terraformationPerStructure;
+
+        updatePlanetVisuals();
+
+    }
+}
+
+
+/* =========================================================
+   TERRAFORMAÇÃO
+========================================================= */
+
+function updatePlanetVisuals() {
+
+    playerData.terraformation =
+        THREE.MathUtils.clamp(
+            playerData.terraformation,
+            0,
+            100
+        );
+
+
+    document.getElementById(
+        "terraformFill"
+    ).style.width =
+        playerData.terraformation +
+        "%";
+
+
+    document.getElementById(
+        "terraformText"
+    ).textContent =
+        Math.floor(
+            playerData.terraformation
+        ) +
+        "%";
+
+
+    if (
+        ground
+    ) {
+
+        const base =
+            planets[currentPlanet]
+            .ground;
+
+
+        const green =
+            planets[currentPlanet]
+            .green;
+
+
+        const a =
+            new THREE.Color(
+                base
+            );
+
+
+        const b =
+            new THREE.Color(
+                green
+            );
+
+
+        const result =
+            a.lerp(
+                b,
+                playerData.terraformation /
+                100
+            );
+
+
+        ground.material.color =
+            result;
+
+
+        scene.background =
+            new THREE.Color(
+                planets[currentPlanet]
+                .sky
+            );
+
+    }
+
+
+    /* PLANTAS */
+
+    if (
+        playerData.terraformation >= 20
+    ) {
+
+        createVegetation();
+
+    }
+}
+
+
+/* =========================================================
+   VEGETAÇÃO
+========================================================= */
+
+function createVegetation() {
+
+    if (
+        Math.random() > .15
+    )
+        return;
+
+
+    const geometry =
+        new THREE.ConeGeometry(
+            .4,
+            1.5,
+            5
+        );
+
+
+    const material =
+        new THREE.MeshStandardMaterial({
+
+            color:
+                planets[currentPlanet]
+                .green
+
+        });
+
+
+    const tree =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+
+    tree.position.set(
+
+        player.position.x +
+        (Math.random() - .5) *
+        30,
+
+        .75,
+
+        player.position.z +
+        (Math.random() - .5) *
+        30
+
+    );
+
+
+    scene.add(tree);
+
+    particles.push(tree);
+}
+
+
+/* =========================================================
+   PRODUÇÃO DOS GERADORES
+========================================================= */
+
+function updateStructures() {
+
+    playerData.water +=
+        playerData.waterGenerators *
+        .002;
+
+
+    playerData.biomass +=
+        playerData.plantGenerators *
+        .001;
+
+
+    playerData.power +=
+        playerData.energyGenerators *
+        .002;
+
+
+    playerData.oxygen +=
+        playerData.oxygenGenerators *
+        .005;
+
+
+    playerData.water =
+        Math.min(
+            playerData.water,
+            999
+        );
+
+
+    playerData.biomass =
+        Math.min(
+            playerData.biomass,
+            999
+        );
+
+
+    playerData.power =
+        Math.min(
+            playerData.power,
+            999
+        );
+
+
+    playerData.oxygen =
+        Math.min(
+            playerData.oxygen,
+            100
+        );
+}
+
+
+/* =========================================================
+   EXPERIÊNCIA
+========================================================= */
+
+function checkLevelUp() {
+
+    const needed =
+        playerData.level *
+        100;
+
+
+    if (
+        playerData.experience >=
+        needed
+    ) {
+
+        playerData.experience -=
+            needed;
+
+        playerData.level++;
+
+
+        playerData.maxHealth +=
+            10;
+
+        playerData.maxEnergy +=
+            10;
+
+        playerData.damage +=
+            5;
+
+
+        playerData.health =
+            playerData.maxHealth;
+
+
+        playerData.energy =
+            playerData.maxEnergy;
+
+
+        showMessage(
+            "⬆️ NÍVEL " +
+            playerData.level +
+            " ALCANÇADO!"
+        );
+
+    }
+}
+
+
+/* =========================================================
+   INTERFACE
+========================================================= */
+
+function updateHUD() {
+
+    setBar(
+        "healthBar",
+        playerData.health,
+        playerData.maxHealth
+    );
+
+    setBar(
+        "oxygenBar",
+        playerData.oxygen,
+        playerData.maxOxygen
+    );
+
+    setBar(
+        "energyBar",
+        playerData.energy,
+        playerData.maxEnergy
+    );
+
+
+    document.getElementById(
+        "healthText"
+    ).textContent =
+        Math.floor(
+            playerData.health
+        );
+
+
+    document.getElementById(
+        "oxygenText"
+    ).textContent =
+        Math.floor(
+            playerData.oxygen
+        );
+
+
+    document.getElementById(
+        "energyText"
+    ).textContent =
+        Math.floor(
+            playerData.energy
+        );
+
+
+    document.getElementById(
+        "water"
+    ).textContent =
+        Math.floor(
+            playerData.water
+        );
+
+
+    document.getElementById(
+        "biomass"
+    ).textContent =
+        Math.floor(
+            playerData.biomass
+        );
+
+
+    document.getElementById(
+        "ore"
+    ).textContent =
+        Math.floor(
+            playerData.ore
+        );
+
+
+    document.getElementById(
+        "power"
+    ).textContent =
+        Math.floor(
+            playerData.power
+        );
+
+
+    document.getElementById(
+        "ammo"
+    ).textContent =
+        playerData.ammo;
+
+
+    document.getElementById(
+        "weaponDamage"
+    ).textContent =
+        playerData.damage;
+}
+
+
+function setBar(
+    id,
+    value,
+    max
+) {
+
+    const element =
+        document.getElementById(id);
+
+
+    element.style.width =
+        Math.max(
+            0,
+            (value / max) * 100
+        ) +
+        "%";
+}
+
+
+/* =========================================================
+   MENSAGENS
+========================================================= */
+
+function showMessage(text) {
+
+    const box =
+        document.getElementById(
+            "messageBox"
+        );
+
+
+    box.textContent =
+        text;
+
+
+    box.style.opacity =
+        "1";
+
+
+    clearTimeout(
+        messageTimeout
+    );
+
+
+    messageTimeout =
+        setTimeout(() => {
+
+            box.style.opacity =
+                "0";
+
+        }, 3000);
+}
+
+
+/* =========================================================
+   MOUSE
+========================================================= */
+
+function onMouseMove(event) {
+
+    mouse.x =
+        (event.clientX /
+        window.innerWidth) *
+        2 - 1;
+
+
+    mouse.y =
+        -(
+            event.clientY /
+            window.innerHeight
+        ) *
+        2 + 1;
+
+
+    if (
+        mouse.down
+    ) {
+
+        shoot();
+
+    }
+}
+
+
+/* =========================================================
+   PAUSA
+========================================================= */
+
+function pauseGame() {
+
+    if (!gameRunning)
+        return;
+
+
+    paused = true;
+
+
+    document.getElementById(
+        "pauseMenu"
+    ).style.display =
+        "flex";
+}
+
+
+function resumeGame() {
+
+    paused = false;
+
+
+    document.getElementById(
+        "pauseMenu"
+    ).style.display =
+        "none";
+}
+
+
+/* =========================================================
+   SALVAMENTO
+========================================================= */
+
+function saveGame() {
+
+    const saveData = {
+
+        planet:
+            currentPlanet,
+
+        player:
+            playerData
+
+    };
+
+
+    localStorage.setItem(
+
+        "planetCivilitationSave",
+
+        JSON.stringify(
+            saveData
+        )
+
+    );
+
+
+    showMessage(
+        "💾 Jogo salvo!"
+    );
+}
+
+
+function loadGame() {
+
+    const save =
+        localStorage.getItem(
+            "planetCivilitationSave"
+        );
+
+
+    if (!save)
+        return;
+
+
+    const data =
+        JSON.parse(save);
+
+
+    currentPlanet =
+        data.planet;
+
+
+    Object.assign(
+        playerData,
+        data.player
+    );
+}
+
+
+/* =========================================================
+   LOOP PRINCIPAL
+========================================================= */
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    if (
+        !gameRunning ||
+        paused
+    )
+        return;
+
+
+    updatePlayer();
+
+    updateBullets();
+
+    updateStructures();
+
+
+    for (
+        const enemy of [...enemies]
+    ) {
+
+        enemy.update();
+
+    }
+
+
+    updateHUD();
+
+
+    /* TIRO CONTÍNUO */
+
+    if (
+        mouse.down
+    ) {
+
+        shoot();
+
+    }
+
+
+    /* MORTE */
+
+    if (
+        playerData.health <= 0
+    ) {
+
+        playerData.health = 0;
+
+        gameOver();
+
+    }
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+}
+
+
+/* =========================================================
+   GAME OVER
+========================================================= */
+
+function gameOver() {
+
+    gameRunning = false;
+
+
+    showMessage(
+        "☠️ COLONIZADOR MORTO"
+    );
+
+
+    setTimeout(() => {
+
+        location.reload();
+
+    }, 3000);
+}
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+function onWindowResize() {
+
+    if (!camera || !renderer)
+        return;
+
+
+    camera.aspect =
+        window.innerWidth /
+        window.innerHeight;
+
+
+    camera.updateProjectionMatrix();
+
+
+    renderer.setSize(
+
+        window.innerWidth,
+
+        window.innerHeight
+
+    );
+}
